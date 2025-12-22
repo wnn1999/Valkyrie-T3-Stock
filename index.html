@@ -7,32 +7,16 @@
         body { font-family: "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif; background-color: #f8f9fa; padding: 20px; }
         .container { max-width: 1000px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* 圖片容器 */
-        .header-logo {
-            text-align: center;
-            /* 將下方間距改為 1pt */
-            margin-bottom: 1pt; 
-        }
-        .header-logo img {
-            max-width: 150px;
-            height: auto;
-            border-radius: 8px;
-            display: inline-block;
-            /* 確保圖片下方沒有多餘的行高間隙 */
-            vertical-align: bottom; 
-        }
-
         /* 標題樣式 */
         h2 { 
             text-align: center; 
             font-family: "Cooper Black", serif; 
             color: rgb(43, 238, 22); 
             font-size: 2.5em;
-            /* 移除標題頂部間距，確保與圖片緊貼 */
-            margin-top: 0; 
-            margin-bottom: 20px; 
+            margin-top: 10px; 
+            margin-bottom: 30px; 
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-            line-height: 1;
+            line-height: 1.2;
         }
         
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
@@ -62,125 +46,3 @@
         }
         
         select:focus, textarea:focus { border-color: #3498db; outline: none; }
-
-        .qty-display { font-size: 1.1em; font-weight: bold; min-width: 40px; display: inline-block; }
-        .low-stock { color: #e74c3c; background-color: #fff5f5; }
-        
-        button { cursor: pointer; padding: 6px 12px; margin: 2px; border: none; border-radius: 4px; transition: 0.3s; }
-        .btn-plus { background-color: #27ae60; color: white; }
-        .btn-plus:hover { background-color: #2ecc71; }
-        .btn-minus { background-color: #e67e22; color: white; }
-        .btn-minus:hover { background-color: #f39c12; }
-        .btn-add { background-color: #3498db; color: white; float: right; margin-bottom: 15px; font-weight: bold; }
-        .btn-delete { background-color: #95a5a6; color: white; font-size: 12px; }
-        
-        .save-tag { font-size: 12px; color: #7f8c8d; text-align: right; margin-top: 10px; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="header-logo">
-        <img src="file:///C:/Users/10007887/Desktop/維尼/Learning/AI/snake.png" alt="Snake Logo">
-    </div>
-
-    <h2>Valkyrie T3 Stock</h2>
-    
-    <button class="btn-add" onclick="addRow()">＋ 新增品項</button>
-    
-    <table id="inventoryTable">
-        <thead>
-            <tr>
-                <th width="12%">顏色</th>
-                <th width="12%">類型</th>
-                <th width="18%">現有庫存</th>
-                <th width="43%">備註 (可換行)</th>
-                <th width="15%">操作</th>
-            </tr>
-        </thead>
-        <tbody id="inventoryBody">
-        </tbody>
-    </table>
-    <div class="save-tag">※ 資料自動儲存於瀏覽器 (備註內按 Enter 鍵可換行)</div>
-</div>
-
-<script>
-    const storageKey = 'Valkyrie_T3_Inventory_Data';
-    let stockData = JSON.parse(localStorage.getItem(storageKey)) || [
-        { color: "Black", type: "PC", qty: 0, note: "" }
-    ];
-
-    function saveData() {
-        localStorage.setItem(storageKey, JSON.stringify(stockData));
-    }
-
-    function renderTable() {
-        const tbody = document.getElementById("inventoryBody");
-        tbody.innerHTML = "";
-
-        stockData.forEach((item, index) => {
-            let row = document.createElement("tr");
-            if (item.qty <= 5) row.classList.add("low-stock");
-
-            row.innerHTML = `
-                <td>
-                    <select onchange="updateValue(${index}, 'color', this.value)">
-                        <option value="Black" ${item.color === 'Black' ? 'selected' : ''}>Black</option>
-                        <option value="White" ${item.color === 'White' ? 'selected' : ''}>White</option>
-                    </select>
-                </td>
-                <td>
-                    <select onchange="updateValue(${index}, 'type', this.value)">
-                        <option value="PC" ${item.type === 'PC' ? 'selected' : ''}>PC</option>
-                        <option value="PS" ${item.type === 'PS' ? 'selected' : ''}>PS</option>
-                        <option value="XBOX" ${item.type === 'XBOX' ? 'selected' : ''}>XBOX</option>
-                    </select>
-                </td>
-                <td>
-                    <button class="btn-minus" onclick="changeQty(${index}, -1)">-</button>
-                    <span class="qty-display">${item.qty}</span>
-                    <button class="btn-plus" onclick="changeQty(${index}, 1)">+</button>
-                </td>
-                <td>
-                    <textarea placeholder="填寫備註..." 
-                              oninput="updateValue(${index}, 'note', this.value)">${item.note || ''}</textarea>
-                </td>
-                <td>
-                    <button class="btn-delete" onclick="deleteRow(${index})">刪除</button>
-                </td>
-            `;
-            tbody.appendChild(row);
-        });
-    }
-
-    function changeQty(index, delta) {
-        stockData[index].qty = Math.max(0, stockData[index].qty + delta);
-        renderTable();
-        saveData();
-    }
-
-    function updateValue(index, field, value) {
-        stockData[index][field] = value;
-        saveData();
-        if (field === 'qty') renderTable();
-    }
-
-    function addRow() {
-        stockData.push({ color: "Black", type: "PC", qty: 0, note: "" });
-        renderTable();
-        saveData();
-    }
-
-    function deleteRow(index) {
-        if(confirm("確定要刪除這筆庫存資料嗎？")) {
-            stockData.splice(index, 1);
-            renderTable();
-            saveData();
-        }
-    }
-
-    renderTable();
-</script>
-
-</body>
-</html>
