@@ -4,52 +4,36 @@
     <meta charset="UTF-8">
     <title>Valkyrie T3 Stock 管理系統</title>
     <style>
-        :root { --primary-color: #2ecc71; --secondary-color: #d35400; --dark-blue: #34495e; --edit-color: #9b59b6; --gray-tag: #95a5a6; --delete-gray: #bdc3c7; }
-        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: #f4f7f6; padding: 20px; color: #333; }
+        :root { --primary-color: #2ecc71; --secondary-color: #d35400; --dark-blue: #34495e; --edit-color: #9b59b6; --gray-tag: #95a5a6; --delete-gray: #bdc3c7; --lock-color: #7f8c8d; }
+        body { font-family: "Calibri", "Candara", "Segoe UI", "Optima", "Arial", "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: #f4f7f6; padding: 20px; color: #333; font-size: 20px; margin: 0; }
         .container { max-width: 1250px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
         .header { text-align: center; margin-bottom: 20px; }
         .header img { max-width: 120px; margin-bottom: 10px; }
         h2 { font-family: "Cooper Black", serif; color: var(--primary-color); font-size: 3em; margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
-        .alert-info { background-color: #e8f8f0; border-left: 5px solid var(--primary-color); padding: 15px; margin: 20px 0; border-radius: 4px; font-size: 0.95em; }
-        .action-bar { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px; }
-        button { cursor: pointer; border: none; border-radius: 6px; font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 8px; padding: 10px 18px; }
+        .alert-info { background-color: #e8f8f0; border-left: 5px solid var(--primary-color); padding: 15px; margin: 20px 0; border-radius: 4px; font-size: 16px; color: #2c3e50; }
+        .action-bar { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px; align-items: center; }
+        button { cursor: pointer; border: none; border-radius: 6px; font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 8px; padding: 10px 18px; font-family: inherit; font-size: 16px; }
         .btn-withdraw { background-color: var(--secondary-color); color: white; }
-        .btn-add { background-color: #3498db; color: white; }
-        .btn-modify { background-color: var(--edit-color); color: white; font-size: 13px; padding: 6px 12px; }
-        
-        /* 1. 刪除按鍵改成灰色 */
-        .btn-delete { background-color: var(--delete-gray); color: white; font-size: 13px; padding: 6px 12px; }
-        .btn-delete:hover { background-color: #95a5a6; }
-
-        .btn-save { background-color: var(--primary-color); color: white; width: 100%; justify-content: center; margin-top: 15px; font-size: 1.1em; }
-        
-        table { width: 100%; border-collapse: collapse; background: white; table-layout: fixed; }
-        th { background-color: var(--dark-blue); color: white; padding: 15px; }
-        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; word-wrap: break-word; }
-        
-        .phase-tag { 
-            background-color: var(--gray-tag); 
-            color: white; 
-            padding: 3px 10px; 
-            border-radius: 20px; 
-            font-size: 0.85em; 
-            font-weight: bold;
-            display: inline-block;
-        }
-
-        .readonly-note { background-color: #f9f9f9; border: 1px solid #eee; color: #7f8c8d; font-size: 12px; text-align: left; padding: 5px; border-radius: 4px; white-space: pre-wrap; max-height: 80px; overflow-y: auto; }
-        
-        /* 3. 庫存數字樣式調整 */
-        .qty-box { font-size: 0.9em; font-weight: normal; color: #95a5a6; } /* 總數灰字小一點 */
-        .qty-remain { font-size: 1.3em; font-weight: bold; color: #333; margin-left: 2px; } /* 剩餘黑字大一點 */
-
-        .ops-cell { display: flex; gap: 8px; justify-content: center; }
+        .btn-lock { background-color: var(--lock-color); color: white; }
+        .btn-lock.unlocked { background-color: var(--primary-color); } 
+        .btn-delete, .btn-modify { color: white; font-size: 14px; padding: 5px 10px; min-width: 60px; justify-content: center; }
+        .btn-delete { background-color: var(--delete-gray); }
+        .btn-modify { background-color: var(--edit-color); }
+        table { width: 100%; border-collapse: collapse; background: white; table-layout: fixed; margin-bottom: 0; }
+        th { background-color: var(--dark-blue); color: white; padding: 15px; font-family: inherit; font-size: 16px; }
+        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; word-wrap: break-word; font-family: inherit; }
+        .phase-tag { background-color: var(--gray-tag); color: white; padding: 4px 12px; border-radius: 20px; font-size: 18px; font-weight: bold; display: inline-block; }
+        .qty-box { font-size: 18px; color: #95a5a6; } 
+        .qty-remain { font-size: 1.6em; font-weight: bold; color: #333; margin-left: 2px; } 
+        .readonly-note { background-color: #f9f9f9; border: 1px solid #eee; color: #7f8c8d; font-size: 15px; text-align: left; padding: 5px; border-radius: 4px; white-space: pre-wrap; max-height: 80px; overflow-y: auto; font-family: inherit; }
+        .admin-controls { display: none; gap: 8px; justify-content: center; flex-direction: row; align-items: center; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); }
         .modal-content { background: white; margin: 5% auto; padding: 25px; border-radius: 12px; width: 500px; max-height: 85vh; overflow-y: auto; }
         .field { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        select, input, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        .other-input { display: none; margin-top: 8px; border: 1px solid var(--primary-color); }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 16px; }
+        select, input, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; font-size: 18px; }
+        .other-input { margin-top: 8px; display: none; border-color: var(--primary-color); background-color: #fafffa; }
+        .btn-save { background-color: var(--primary-color); color: white; width: 100%; justify-content: center; margin-top: 15px; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -62,14 +46,16 @@
     <div class="alert-info">📢 領用說明：領取前請先向專案 PM 確認；核准後更新紀錄。</div>
     <div class="action-bar">
         <button class="btn-withdraw" onclick="toggleModal('withdrawModal', true)">📋 領用登記</button>
-        <button class="btn-add" onclick="openAddModal()">＋ 新增庫存</button>
+        <button id="lockBtn" class="btn-lock" onclick="toggleAdminMode()">
+            <span id="lockIcon">🔒</span> <span id="lockText">Owner only</span>
+        </button>
+        <button id="addBtn" class="btn-add" style="background-color: #3498db; color: white; display: none;" onclick="openAddModal()">＋ 新增庫存</button>
     </div>
     <table>
         <thead>
             <tr>
                 <th width="12%">類別</th><th width="10%">顏色</th><th width="10%">類型</th><th width="10%">產地</th><th width="10%">Phase</th>
-                <th width="14%">總數 | 剩餘</th>
-                <th width="24%">備註</th><th width="14%">操作</th>
+                <th width="20%">庫存 (總數 | 剩餘)</th><th width="20%">備註</th><th width="12%">操作</th>
             </tr>
         </thead>
         <tbody id="inventoryBody"></tbody>
@@ -78,52 +64,28 @@
 
 <div id="itemModal" class="modal">
     <div class="modal-content">
-        <h3 id="modalTitle">✨ 新增庫存</h3>
+        <h3 id="modalTitle" style="font-size: 22px;">✨ 新增庫存</h3>
         <input type="hidden" id="edit_index">
-        <div class="field">
-            <label>產品類別</label>
-            <select id="i_cat" onchange="toggleOther(this, 'i_cat_other')">
-                <option value="耳機">耳機</option><option value="線材">線材</option><option value="Mic Boom">Mic Boom</option><option value="其他">其他...</option>
-            </select>
-            <input type="text" id="i_cat_other" class="other-input" placeholder="輸入產品類別">
-        </div>
-        <div class="field">
-            <label>顏色</label>
-            <select id="i_color" onchange="toggleOther(this, 'i_color_other')">
-                <option value="Black">Black</option><option value="White">White</option><option value="N/A">N/A</option><option value="其他">其他...</option>
-            </select>
-            <input type="text" id="i_color_other" class="other-input" placeholder="輸入顏色">
-        </div>
-        <div class="field">
-            <label>類型</label>
-            <select id="i_type" onchange="toggleOther(this, 'i_type_other')">
-                <option value="PC">PC</option><option value="PS">PS</option><option value="XBOX">XBOX</option><option value="N/A">N/A</option><option value="其他">其他...</option>
-            </select>
-            <input type="text" id="i_type_other" class="other-input" placeholder="輸入類型">
-        </div>
-        <div class="field">
-            <label>產地</label>
-            <select id="i_origin" onchange="toggleOther(this, 'i_origin_other')">
-                <option value="China">China</option><option value="Vietnam">Vietnam</option><option value="Thailand">Thailand</option><option value="其他">其他...</option>
-            </select>
-            <input type="text" id="i_origin_other" class="other-input" placeholder="輸入產地">
-        </div>
-        <div class="field"><label>Phase</label><input type="text" id="i_phase" placeholder="例如: EVT"></div>
-        <div class="field"><label>總庫存數量</label><input type="number" id="i_qty" value="1"></div>
-        <div class="field"><label>備註</label><textarea id="i_note" rows="3"></textarea></div>
+        <div class="field"><label>產品類別</label><select id="i_cat"><option value="耳機">耳機</option><option value="線材">線材</option><option value="Mic Boom">Mic Boom</option></select></div>
+        <div class="field"><label>顏色</label><select id="i_color" onchange="checkOther(this, 'other_color')"><option value="Black">Black</option><option value="White">White</option><option value="Grey">Grey</option><option value="other">Other... (其他)</option></select><input type="text" id="other_color" class="other-input" placeholder="請輸入新顏色"></div>
+        <div class="field"><label>類型</label><select id="i_type" onchange="checkOther(this, 'other_type')"><option value="PC">PC</option><option value="PS">PS</option><option value="XBOX">XBOX</option><option value="other">Other... (其他)</option></select><input type="text" id="other_type" class="other-input" placeholder="請輸入新類型"></div>
+        <div class="field"><label>產地</label><select id="i_origin" onchange="checkOther(this, 'other_origin')"><option value="China">China</option><option value="Vietnam">Vietnam</option><option value="other">Other... (其他)</option></select><input type="text" id="other_origin" class="other-input" placeholder="請輸入新產地"></div>
+        <div class="field"><label>Phase</label><input type="text" id="i_phase" placeholder="例如: EVT, DVT, PVT"></div>
+        <div class="field"><label>總數</label><input type="number" id="i_qty" value="1"></div>
+        <div class="field"><label>備註</label><textarea id="i_note"></textarea></div>
         <button class="btn-save" onclick="saveToSupabase()">儲存資料</button>
-        <button style="background:none; width:100%; margin-top:10px; color:gray" onclick="toggleModal('itemModal', false)">取消</button>
+        <button onclick="toggleModal('itemModal', false)" style="width:100%; background:none; color:gray; margin-top:10px; cursor:pointer">取消</button>
     </div>
 </div>
 
 <div id="withdrawModal" class="modal">
     <div class="modal-content">
-        <h3>📦 領用登記</h3>
+        <h3 style="font-size: 22px;">📦 領用登記</h3>
         <div class="field"><label>選擇領用品項</label><select id="m_target"></select></div>
-        <div class="field"><label>領用數量</label><input type="number" id="m_qty" value="1" min="1"></div>
-        <div class="field"><label>領用原因 / 領用人</label><textarea id="m_note" placeholder="請註明用途..."></textarea></div>
+        <div class="field"><label>數量</label><input type="number" id="m_qty" value="1"></div>
+        <div class="field"><label>原因</label><textarea id="m_note"></textarea></div>
         <button class="btn-save" style="background:var(--secondary-color)" onclick="withdrawStock()">確認領用</button>
-        <button style="background:none; width:100%; margin-top:10px; color:gray" onclick="toggleModal('withdrawModal', false)">取消</button>
+        <button onclick="toggleModal('withdrawModal', false)" style="width:100%; background:none; color:gray; margin-top:10px; cursor:pointer">取消</button>
     </div>
 </div>
 
@@ -131,6 +93,13 @@
 <script>
     const db = supabase.createClient('https://djjczmcajxjyqjkbjoud.supabase.co', 'sb_publishable_kHc06K5jzjqPiAVj-eMGTg_1oOhA_6t');
     let stockData = [];
+    let isAdmin = false; 
+
+    function checkOther(selectElement, inputId) {
+        const input = document.getElementById(inputId);
+        if (selectElement.value === 'other') { input.style.display = 'block'; input.focus(); }
+        else { input.style.display = 'none'; input.value = ''; }
+    }
 
     async function loadData() {
         const { data, error } = await db.from('message').select('*').order('created_at', { ascending: true });
@@ -139,78 +108,115 @@
         render();
     }
 
-    db.channel('any').on('postgres_changes', { event: '*', schema: 'public', table: 'message' }, loadData).subscribe();
-
-    async function saveToSupabase() {
-        const idx = document.getElementById('edit_index').value;
-        const qty = parseInt(document.getElementById('i_qty').value);
-        const payload = {
-            category: getV('i_cat', 'i_cat_other'),
-            color: getV('i_color', 'i_color_other'),
-            type: getV('i_type', 'i_type_other'),
-            origin: getV('i_origin', 'i_origin_other'),
-            phase: document.getElementById('i_phase').value.toUpperCase() || "N/A",
-            qty: qty,
-            remain: (idx === "-1" ? qty : Math.max(0, stockData[idx].remain + (qty - stockData[idx].qty))),
-            note: document.getElementById('i_note').value
-        };
-        await db.from('message').insert([{ content: JSON.stringify(payload) }]); // 簡化邏輯供參考
-        if (idx !== "-1") await db.from('message').delete().eq('id', stockData[idx].db_id); // 替換舊資料
-        toggleModal('itemModal', false);
-    }
-
-    async function withdrawStock() {
-        const idx = document.getElementById("m_target").value;
-        const q = parseInt(document.getElementById("m_qty").value);
-        if(idx === "" || q > stockData[idx].remain || q <= 0) return alert("數量錯誤！");
-        const item = {...stockData[idx]};
-        const tid = item.db_id;
-        item.remain -= q;
-        item.note += `\n>> ${new Date().toLocaleString('zh-TW')} | 領用 -${q} | ${document.getElementById("m_note").value}`;
-        delete item.db_id;
-        await db.from('message').update({ content: JSON.stringify(item) }).eq('id', tid);
-        toggleModal('withdrawModal', false);
-    }
-
-    async function deleteItem(idx) {
-        if(confirm(`⚠️ 確定刪除嗎？`)) await db.from('message').delete().eq('id', stockData[idx].db_id);
+    function toggleAdminMode() {
+        isAdmin = !isAdmin;
+        const btn = document.getElementById('lockBtn'), icon = document.getElementById('lockIcon'), addBtn = document.getElementById('addBtn');
+        btn.classList.toggle('unlocked', isAdmin);
+        icon.textContent = isAdmin ? "🔓" : "🔒";
+        addBtn.style.display = isAdmin ? "flex" : "none";
+        render();
     }
 
     function render() {
-        const b = document.getElementById("inventoryBody"); 
-        b.innerHTML = "";
+        const b = document.getElementById("inventoryBody"); b.innerHTML = "";
         stockData.forEach((item, i) => {
             let phaseDisplay = item.phase;
-            if(['EVT', 'DVT', 'PVT'].includes(item.phase.toUpperCase())) {
+            if(item.phase && ['EVT', 'DVT', 'PVT'].includes(item.phase.toUpperCase())) {
                 phaseDisplay = `<span class="phase-tag">${item.phase.toUpperCase()}</span>`;
             }
-
             b.innerHTML += `<tr>
-                <td>${item.category}</td>
-                <td>${item.color}</td>
-                <td>${item.type}</td>
-                <td>${item.origin}</td>
-                <td>${phaseDisplay}</td>
-                <td>
-                    <div class="qty-box">
-                        ${item.qty} | <span class="qty-remain">${item.remain}</span>
-                    </div>
-                </td>
+                <td>${item.category}</td><td>${item.color || 'N/A'}</td><td>${item.type || 'N/A'}</td><td>${item.origin || 'N/A'}</td><td>${phaseDisplay || ''}</td>
+                <td><div class="qty-box">${item.qty} | <span class="qty-remain">${item.remain}</span></div></td>
                 <td><div class="readonly-note">${item.note || ''}</div></td>
-                <td class="ops-cell">
-                    <button class="btn-modify" onclick="openEdit(${i})">修改</button>
-                    <button class="btn-delete" onclick="deleteItem(${i})">刪除</button>
+                <td>
+                    <div class="admin-controls" style="display: ${isAdmin ? 'flex' : 'none'}">
+                        <button class="btn-delete" onclick="deleteItem(${i})">刪除</button>
+                        <button class="btn-modify" onclick="openEdit(${i})">修改</button>
+                    </div>
+                    <span style="display: ${isAdmin ? 'none' : 'block'}; color: #ccc;">-</span>
                 </td>
             </tr>`;
         });
     }
 
-    function toggleModal(id, s) { document.getElementById(id).style.display = s ? "block" : "none"; if(id==='withdrawModal' && s) { document.getElementById("m_target").innerHTML = '<option value="">-- 請選擇 --</option>' + stockData.map((it, i) => `<option value="${i}">${it.category}-${it.phase}</option>`).join(''); } }
-    function toggleOther(s, i) { document.getElementById(i).style.display = s.value === "其他" ? "block" : "none"; }
-    function getV(s, i) { const el = document.getElementById(s); return el.value === "其他" ? document.getElementById(i).value : el.value; }
-    function openAddModal() { document.getElementById('edit_index').value = "-1"; toggleModal('itemModal', true); }
-    function openEdit(i) { /* 載入資料邏輯與前次相同 */ toggleModal('itemModal', true); }
+    async function saveToSupabase() {
+        const idx = document.getElementById('edit_index').value;
+        const qty = parseInt(document.getElementById('i_qty').value);
+        const getVal = (selId, inpId) => {
+            const sel = document.getElementById(selId);
+            return sel.value === 'other' ? document.getElementById(inpId).value : sel.value;
+        };
+        const payload = {
+            category: document.getElementById('i_cat').value,
+            color: getVal('i_color', 'other_color'),
+            type: getVal('i_type', 'other_type'),
+            origin: getVal('i_origin', 'other_origin'),
+            phase: document.getElementById('i_phase').value,
+            qty: qty,
+            remain: (idx === "-1" ? qty : Math.max(0, stockData[idx].remain + (qty - stockData[idx].qty))),
+            note: document.getElementById('i_note').value
+        };
+        if (idx === "-1") { await db.from('message').insert([{ content: JSON.stringify(payload) }]); }
+        else { await db.from('message').update({ content: JSON.stringify(payload) }).eq('id', stockData[idx].db_id); }
+        toggleModal('itemModal', false);
+    }
 
+    async function withdrawStock() {
+        const idx = document.getElementById("m_target").value, q = parseInt(document.getElementById("m_qty").value);
+        if(idx === "" || q > stockData[idx].remain || q <= 0) return alert("數量錯誤！");
+        const item = {...stockData[idx]}, tid = item.db_id;
+        item.remain -= q;
+        const dateStr = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        item.note += `\n>> ${dateStr} | 領用 -${q} | ${document.getElementById("m_note").value}`;
+        delete item.db_id;
+        await db.from('message').update({ content: JSON.stringify(item) }).eq('id', tid);
+        toggleModal('withdrawModal', false);
+    }
+
+    function toggleModal(id, s) { 
+        document.getElementById(id).style.display = s ? "block" : "none"; 
+        if(!s && id === 'itemModal') {
+            ['other_color', 'other_type', 'other_origin'].forEach(id => document.getElementById(id).style.display = 'none');
+        }
+        if(id==='withdrawModal' && s) {
+            document.getElementById("m_target").innerHTML = '<option value="">-- 請選擇品項 --</option>' + 
+                stockData.map((it, i) => {
+                    const phaseInfo = it.phase ? ` ${it.phase}` : "";
+                    return `<option value="${i}">[${it.category}] ${it.color}-${it.type} (${it.origin})${phaseInfo}</option>`;
+                }).join('');
+        }
+    }
+
+    async function deleteItem(idx) { if(confirm("確定刪除？")) await db.from('message').delete().eq('id', stockData[idx].db_id); }
+
+    function openAddModal() { 
+        document.getElementById('modalTitle').textContent = "✨ 新增庫存";
+        document.getElementById('edit_index').value = "-1"; 
+        document.getElementById('i_qty').value = 1; document.getElementById('i_note').value = "";
+        toggleModal('itemModal', true); 
+    }
+
+    function openEdit(i) {
+        const it = stockData[i];
+        document.getElementById('modalTitle').textContent = "✏️ 修改庫存";
+        document.getElementById('edit_index').value = i;
+        document.getElementById('i_cat').value = it.category;
+        const setSelect = (selId, inpId, val) => {
+            const sel = document.getElementById(selId), inp = document.getElementById(inpId);
+            const exists = Array.from(sel.options).some(opt => opt.value === val);
+            if (exists) { sel.value = val; inp.style.display = 'none'; }
+            else { sel.value = 'other'; inp.value = val; inp.style.display = 'block'; }
+        };
+        setSelect('i_color', 'other_color', it.color);
+        setSelect('i_type', 'other_type', it.type);
+        setSelect('i_origin', 'other_origin', it.origin);
+        document.getElementById('i_phase').value = it.phase || "";
+        document.getElementById('i_qty').value = it.qty;
+        document.getElementById('i_note').value = it.note || "";
+        toggleModal('itemModal', true);
+    }
+
+    db.channel('any').on('postgres_changes', { event: '*', schema: 'public', table: 'message' }, loadData).subscribe();
     loadData();
 </script>
 </body>
