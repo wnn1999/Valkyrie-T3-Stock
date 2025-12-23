@@ -12,11 +12,11 @@
         h2 { font-family: "Cooper Black", serif; color: var(--primary-color); font-size: 3em; margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
         .alert-info { background-color: #e8f8f0; border-left: 5px solid var(--primary-color); padding: 15px; margin: 20px 0; border-radius: 4px; font-size: 16px; color: #2c3e50; }
         .action-bar { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px; align-items: center; }
-        button { cursor: pointer; border: none; border-radius: 6px; font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 8px; padding: 10px 18px; font-family: inherit; font-size: 16px; }
-        .btn-withdraw { background-color: var(--secondary-color); color: white; }
-        .btn-lock { background-color: var(--lock-color); color: white; }
-        .btn-lock.unlocked { background-color: var(--primary-color); } 
-        .btn-delete, .btn-modify { color: white; font-size: 14px; padding: 5px 10px; min-width: 60px; justify-content: center; }
+        button { border: none; border-radius: 6px; font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 8px; padding: 10px 18px; font-family: inherit; font-size: 16px; cursor: default; }
+        .btn-withdraw { cursor: pointer; background-color: var(--secondary-color); color: white; }
+        .btn-lock { background-color: var(--lock-color); color: white; opacity: 0.8; }
+        .btn-lock.unlocked { background-color: var(--primary-color); opacity: 1; }
+        .btn-delete, .btn-modify { cursor: pointer; color: white; font-size: 14px; padding: 5px 10px; min-width: 60px; justify-content: center; }
         .btn-delete { background-color: var(--delete-gray); }
         .btn-modify { background-color: var(--edit-color); }
         table { width: 100%; border-collapse: collapse; background: white; table-layout: fixed; margin-bottom: 0; }
@@ -33,7 +33,7 @@
         label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 16px; }
         select, input, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; font-size: 18px; }
         .other-input { margin-top: 8px; display: none; border-color: var(--primary-color); background-color: #fafffa; }
-        .btn-save { background-color: var(--primary-color); color: white; width: 100%; justify-content: center; margin-top: 15px; font-size: 18px; }
+        .btn-save { cursor: pointer; background-color: var(--primary-color); color: white; width: 100%; justify-content: center; margin-top: 15px; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -46,10 +46,10 @@
     <div class="alert-info">📢 領用說明：領取前請先向專案 PM 確認；核准後更新紀錄。</div>
     <div class="action-bar">
         <button class="btn-withdraw" onclick="toggleModal('withdrawModal', true)">📋 領用登記</button>
-        <button id="lockBtn" class="btn-lock" onclick="toggleAdminMode()">
+        <button id="lockBtn" class="btn-lock" onclick="handleAdminClick()">
             <span id="lockIcon">🔒</span> <span id="lockText">Owner only</span>
         </button>
-        <button id="addBtn" class="btn-add" style="background-color: #3498db; color: white; display: none;" onclick="openAddModal()">＋ 新增庫存</button>
+        <button id="addBtn" style="background-color: #3498db; color: white; display: none; cursor: pointer;" onclick="openAddModal()">＋ 新增庫存</button>
     </div>
     <table>
         <thead>
@@ -70,7 +70,20 @@
         <div class="field"><label>顏色</label><select id="i_color" onchange="checkOther(this, 'other_color')"><option value="Black">Black</option><option value="White">White</option><option value="Grey">Grey</option><option value="other">Other... (其他)</option></select><input type="text" id="other_color" class="other-input" placeholder="請輸入新顏色"></div>
         <div class="field"><label>類型</label><select id="i_type" onchange="checkOther(this, 'other_type')"><option value="PC">PC</option><option value="PS">PS</option><option value="XBOX">XBOX</option><option value="other">Other... (其他)</option></select><input type="text" id="other_type" class="other-input" placeholder="請輸入新類型"></div>
         <div class="field"><label>產地</label><select id="i_origin" onchange="checkOther(this, 'other_origin')"><option value="China">China</option><option value="Vietnam">Vietnam</option><option value="other">Other... (其他)</option></select><input type="text" id="other_origin" class="other-input" placeholder="請輸入新產地"></div>
-        <div class="field"><label>Phase</label><input type="text" id="i_phase" placeholder="例如: EVT, DVT, PVT"></div>
+        
+        <div class="field">
+            <label>Phase</label>
+            <select id="i_phase" onchange="checkOther(this, 'other_phase')">
+                <option value="EVT">EVT</option>
+                <option value="DVT1">DVT1</option>
+                <option value="DVT2">DVT2</option>
+                <option value="PVT">PVT</option>
+                <option value="MP">MP</option>
+                <option value="other">Other... (自定義)</option>
+            </select>
+            <input type="text" id="other_phase" class="other-input" placeholder="請輸入自定義 Phase">
+        </div>
+
         <div class="field"><label>總數</label><input type="number" id="i_qty" value="1"></div>
         <div class="field"><label>備註</label><textarea id="i_note"></textarea></div>
         <button class="btn-save" onclick="saveToSupabase()">儲存資料</button>
@@ -95,6 +108,22 @@
     let stockData = [];
     let isAdmin = false; 
 
+    function handleAdminClick() {
+        if (!isAdmin) {
+            const pwd = prompt("請輸入管理員密碼：");
+            if (pwd === "winnie") { toggleAdminMode(true); } 
+            else { alert("密碼錯誤！"); }
+        } else { toggleAdminMode(false); }
+    }
+
+    function toggleAdminMode(state) {
+        isAdmin = state;
+        const btn = document.getElementById('lockBtn'), icon = document.getElementById('lockIcon'), addBtn = document.getElementById('addBtn');
+        if (isAdmin) { btn.classList.add('unlocked'); icon.textContent = "🔓"; addBtn.style.display = "flex"; } 
+        else { btn.classList.remove('unlocked'); icon.textContent = "🔒"; addBtn.style.display = "none"; }
+        render();
+    }
+
     function checkOther(selectElement, inputId) {
         const input = document.getElementById(inputId);
         if (selectElement.value === 'other') { input.style.display = 'block'; input.focus(); }
@@ -108,20 +137,12 @@
         render();
     }
 
-    function toggleAdminMode() {
-        isAdmin = !isAdmin;
-        const btn = document.getElementById('lockBtn'), icon = document.getElementById('lockIcon'), addBtn = document.getElementById('addBtn');
-        btn.classList.toggle('unlocked', isAdmin);
-        icon.textContent = isAdmin ? "🔓" : "🔒";
-        addBtn.style.display = isAdmin ? "flex" : "none";
-        render();
-    }
-
     function render() {
         const b = document.getElementById("inventoryBody"); b.innerHTML = "";
         stockData.forEach((item, i) => {
             let phaseDisplay = item.phase;
-            if(item.phase && ['EVT', 'DVT', 'PVT'].includes(item.phase.toUpperCase())) {
+            // 標籤樣式支援 DVT1, DVT2, MP
+            if(item.phase && ['EVT', 'DVT1', 'DVT2', 'PVT', 'MP'].includes(item.phase.toUpperCase())) {
                 phaseDisplay = `<span class="phase-tag">${item.phase.toUpperCase()}</span>`;
             }
             b.innerHTML += `<tr>
@@ -151,7 +172,7 @@
             color: getVal('i_color', 'other_color'),
             type: getVal('i_type', 'other_type'),
             origin: getVal('i_origin', 'other_origin'),
-            phase: document.getElementById('i_phase').value,
+            phase: getVal('i_phase', 'other_phase'),
             qty: qty,
             remain: (idx === "-1" ? qty : Math.max(0, stockData[idx].remain + (qty - stockData[idx].qty))),
             note: document.getElementById('i_note').value
@@ -176,7 +197,7 @@
     function toggleModal(id, s) { 
         document.getElementById(id).style.display = s ? "block" : "none"; 
         if(!s && id === 'itemModal') {
-            ['other_color', 'other_type', 'other_origin'].forEach(id => document.getElementById(id).style.display = 'none');
+            ['other_color', 'other_type', 'other_origin', 'other_phase'].forEach(id => document.getElementById(id).style.display = 'none');
         }
         if(id==='withdrawModal' && s) {
             document.getElementById("m_target").innerHTML = '<option value="">-- 請選擇品項 --</option>' + 
@@ -210,7 +231,7 @@
         setSelect('i_color', 'other_color', it.color);
         setSelect('i_type', 'other_type', it.type);
         setSelect('i_origin', 'other_origin', it.origin);
-        document.getElementById('i_phase').value = it.phase || "";
+        setSelect('i_phase', 'other_phase', it.phase);
         document.getElementById('i_qty').value = it.qty;
         document.getElementById('i_note').value = it.note || "";
         toggleModal('itemModal', true);
