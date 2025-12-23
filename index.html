@@ -1,163 +1,113 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <title>Valkyrie T3 Stock 管理系統</title>
-    <style>
-        :root { --primary-color: #2ecc71; --secondary-color: #d35400; --dark-blue: #34495e; --edit-color: #9b59b6; }
-        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: #f4f7f6; padding: 20px; color: #333; }
-        .container { max-width: 1250px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-        
-        .header { text-align: center; margin-bottom: 20px; }
-        .header img { max-width: 120px; margin-bottom: 10px; }
-        h2 { font-family: "Cooper Black", serif; color: var(--primary-color); font-size: 3em; margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
-        
-        .alert-info { background-color: #e8f8f0; border-left: 5px solid var(--primary-color); padding: 15px; margin: 20px 0; border-radius: 4px; font-size: 0.95em; }
-
-        .action-bar { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px; }
-        button { cursor: pointer; border: none; border-radius: 6px; font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
-        
-        .btn-withdraw { background-color: var(--secondary-color); color: white; padding: 12px 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn-withdraw:hover { background-color: #e67e22; transform: translateY(-2px); }
-        
-        .btn-add { background-color: #3498db; color: white; padding: 12px 24px; }
-        .btn-edit { background-color: var(--edit-color); color: white; padding: 5px 10px; font-size: 12px; }
-        .btn-delete { background-color: #bdc3c7; color: white; padding: 5px 10px; font-size: 12px; }
-        .btn-save { background-color: var(--primary-color); color: white; padding: 12px; width: 100%; font-size: 1.1em; margin-top: 15px; justify-content: center; }
-
-        table { width: 100%; border-collapse: collapse; background: white; overflow: hidden; table-layout: fixed; }
-        th { background-color: var(--dark-blue); color: white; padding: 15px; font-weight: 500; }
-        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; word-wrap: break-word; }
-        
-        .readonly-note { 
-            background-color: #f9f9f9; 
-            border: 1px solid #eee; 
-            color: #7f8c8d; 
-            font-size: 12px; 
-            text-align: left; 
-            padding: 5px; 
-            border-radius: 4px; 
-            white-space: pre-wrap; 
-            max-height: 80px; 
-            overflow-y: auto; 
-        }
-
-        .qty-box { font-size: 1.1em; font-weight: bold; }
-        .ops-cell { display: flex; gap: 5px; justify-content: center; }
-        
-        select, input, textarea { padding: 10px; border: 1px solid #ddd; border-radius: 4px; width: 100%; box-sizing: border-box; font-size: 14px; }
-        .other-input { display: none; margin-top: 8px; border: 1px solid var(--primary-color); background: #f0fff4; }
-
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); }
-        .modal-content { background: white; margin: 2% auto; padding: 25px; border-radius: 12px; width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
-        .modal-header { border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 10px; }
-        .field-group { margin-bottom: 15px; }
-        .field-group label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 0.9em; color: #666; }
-        
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f9f9f9; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--primary-color); }
-        .info-item { font-size: 0.9em; color: #555; }
-        .info-item b { color: #2c3e50; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="header">
-        <img src="snake.png" alt="Logo">
-        <h2>Valkyrie T3 Stock</h2>
-    </div>
-
-    <div class="alert-info">📢 領用說明：領取前請先向專案 PM 確認；核准後更新紀錄。</div>
-    
-    <div class="action-bar">
-        <button class="btn-withdraw" onclick="toggleModal('withdrawModal', true)">📋 領用登記</button>
-        <button class="btn-add" onclick="openAddModal()">＋ 新增庫存</button>
-    </div>
-    
-    <table id="inventoryTable">
-        <thead>
-            <tr>
-                <th width="12%">產品類別</th>
-                <th width="10%">顏色</th>
-                <th width="10%">類型</th>
-                <th width="10%">產地</th>
-                <th width="10%">Phase</th>
-                <th width="14%">庫存 (總數|剩餘)</th>
-                <th width="24%">備註</th>
-                <th width="10%">操作</th>
-            </tr>
-        </thead>
-        <tbody id="inventoryBody"></tbody>
-    </table>
-</div>
-
-<div id="itemModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header"><h3 id="modalTitle">✨ 新增庫存品項</h3></div>
-        <input type="hidden" id="edit_index">
-        <div class="field-group">
-            <label>產品類別</label>
-            <select id="i_cat" onchange="toggleOtherInput(this, 'i_cat_other')">
-                <option value="耳機">耳機</option><option value="線材">線材</option><option value="Mic Boom">Mic Boom</option><option value="其他">其他...</option>
-            </select>
-            <input type="text" id="i_cat_other" class="other-input" placeholder="請輸入產品類別">
-        </div>
-        <div class="field-group">
-            <label>顏色</label>
-            <select id="i_color" onchange="toggleOtherInput(this, 'i_color_other')">
-                <option value="Black">Black</option><option value="White">White</option><option value="N/A">N/A</option><option value="其他">其他...</option>
-            </select>
-            <input type="text" id="i_color_other" class="other-input" placeholder="請輸入顏色">
-        </div>
-        <div class="field-group">
-            <label>類型</label>
-            <select id="i_type" onchange="toggleOtherInput(this, 'i_type_other')">
-                <option value="PC">PC</option><option value="PS">PS</option><option value="XBOX">XBOX</option><option value="N/A">N/A</option><option value="其他">其他...</option>
-            </select>
-            <input type="text" id="i_type_other" class="other-input" placeholder="請輸入類型">
-        </div>
-        <div class="field-group">
-            <label>產地</label>
-            <select id="i_origin" onchange="toggleOtherInput(this, 'i_origin_other')">
-                <option value="China">China</option><option value="Vietnam">Vietnam</option><option value="Thailand">Thailand</option><option value="其他">其他...</option>
-            </select>
-            <input type="text" id="i_origin_other" class="other-input" placeholder="請輸入產地">
-        </div>
-        <div class="field-group"><label>Phase</label><input type="text" id="i_phase" placeholder="例如: MP, EVT..."></div>
-        <div class="field-group"><label>總庫存數量</label><input type="number" id="i_qty" value="1" min="1"></div>
-        <div class="field-group"><label>備註 (在此編輯)</label><textarea id="i_note" rows="4"></textarea></div>
-        <button class="btn-save" onclick="saveItem()">儲存並更新</button>
-        <button style="background:none; color:gray; width:100%; margin-top:10px;" onclick="toggleModal('itemModal', false)">取消</button>
-    </div>
-</div>
-
-<div id="withdrawModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header"><h3>📦 領用登記</h3></div>
-        <div class="field-group">
-            <label>選擇領用品項</label>
-            <select id="m_target" onchange="syncWithdrawDetails()"></select>
-        </div>
-        <div class="info-grid" id="m_detail_box" style="display:none;">
-            <div class="info-item">產品類別: <b id="d_cat">-</b></div>
-            <div class="info-item">產地: <b id="d_origin">-</b></div>
-            <div class="info-item">顏色: <b id="d_color">-</b></div>
-            <div class="info-item">類型: <b id="d_type">-</b></div>
-            <div class="info-item">Phase: <b id="d_phase">-</b></div>
-            <div class="info-item" style="color: var(--secondary-color);">目前剩餘: <b id="d_remain">0</b></div>
-        </div>
-        <div class="field-group"><label>領用數量</label><input type="number" id="m_qty" value="1" min="1"></div>
-        <div class="field-group"><label>領用原因 / 領用人</label><textarea id="m_note" placeholder="請輸入用途..."></textarea></div>
-        <button class="btn-save" style="background:var(--secondary-color)" onclick="processWithdraw()">確認領用</button>
-        <button style="background:none; color:gray; width:100%; margin-top:10px;" onclick="toggleModal('withdrawModal', false)">取消</button>
-    </div>
-</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-    const storageKey = 'Valkyrie_V13_Data';
-    let stockData = JSON.parse(localStorage.getItem(storageKey)) || [];
+    // 2. 初始化 Supabase 連線
+    const SUPABASE_URL = 'https://djjczmcajxjyqjkbjoud.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_kHc06K5jzjqPiAVj-eMGTg_1oOhA_6t';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    function saveData() { localStorage.setItem(storageKey, JSON.stringify(stockData)); }
+    let stockData = [];
+
+    // --- 核心功能：從 Supabase 抓取資料 ---
+    async function fetchStockData() {
+        // 從名為 'message' 的表格讀取 (依據你的描述，如果是 messages 請自行修正)
+        const { data, error } = await supabase
+            .from('message') 
+            .select('*')
+            .order('created_at', { ascending: true });
+        
+        if (error) {
+            console.error('抓取資料失敗:', error.message);
+        } else {
+            // 將資料庫中的 content (JSON 字串) 解析回物件並記錄 db_id
+            stockData = data.map(item => ({
+                db_id: item.id,
+                ...JSON.parse(item.content)
+            }));
+            renderTable();
+        }
+    }
+
+    // --- 核心需求：Supabase Realtime 即時監聽 ---
+    // 監聽資料庫的任何變動 (新增、更新、刪除)，並即時刷新列表
+    supabase
+        .channel('schema-db-changes')
+        .on('postgres_changes', { 
+            event: '*', 
+            schema: 'public', 
+            table: 'message' 
+        }, (payload) => {
+            console.log('偵測到雲端更新，同步中...', payload);
+            fetchStockData();
+        })
+        .subscribe();
+
+    // 3. 儲存/更新資料到 Supabase (insert & update)
+    async function saveItem() {
+        const idx = document.getElementById('edit_index').value;
+        const qty = parseInt(document.getElementById('i_qty').value);
+        
+        const payload = { 
+            category: getVal('i_cat', 'i_cat_other'),
+            color: getVal('i_color', 'i_color_other'),
+            type: getVal('i_type', 'i_type_other'),
+            origin: getVal('i_origin', 'i_origin_other'),
+            phase: document.getElementById('i_phase').value || "N/A",
+            qty: qty, 
+            remain: (idx === "-1" ? qty : Math.max(0, stockData[idx].remain + (qty - stockData[idx].qty))),
+            note: document.getElementById('i_note').value 
+        };
+
+        if(!payload.category || !payload.origin) { alert("請填寫必要欄位！"); return; }
+
+        if (idx === "-1") {
+            // 新增資料到雲端
+            const { error } = await supabase.from('message').insert([{ content: JSON.stringify(payload) }]);
+            if (error) alert("儲存失敗: " + error.message);
+        } else {
+            // 更新雲端既有資料
+            const targetId = stockData[idx].db_id;
+            const { error } = await supabase.from('message').update({ content: JSON.stringify(payload) }).eq('id', targetId);
+            if (error) alert("更新失敗: " + error.message);
+        }
+
+        toggleModal('itemModal', false);
+    }
+
+    // 4. 領用登記連動雲端
+    async function processWithdraw() {
+        const idx = document.getElementById("m_target").value;
+        const q = parseInt(document.getElementById("m_qty").value);
+        if(idx === "" || q > stockData[idx].remain) { alert("庫存不足或未選擇品項！"); return; }
+
+        const item = {...stockData[idx]}; // 複製物件
+        const targetId = item.db_id;
+        
+        item.remain -= q;
+        const timestamp = new Date().toLocaleString('zh-TW', {hour12:false});
+        item.note += `\n>> ${timestamp} | 領用 -${q} | 原因: ${document.getElementById("m_note").value}`;
+
+        // 移除輔助用的 db_id 後存回
+        delete item.db_id;
+        const { error } = await supabase.from('message').update({ content: JSON.stringify(item) }).eq('id', targetId);
+        
+        if (error) {
+            alert("領用失敗: " + error.message);
+        } else {
+            toggleModal('withdrawModal', false);
+        }
+    }
+
+    // 5. 刪除雲端資料
+    async function deleteRow(index) {
+        if(confirm("確定刪除此品項？這將永久移除雲端紀錄。")) {
+            const targetId = stockData[index].db_id;
+            const { error } = await supabase.from('message').delete().eq('id', targetId);
+            if (error) alert("刪除失敗: " + error.message);
+        }
+    }
+
+    // --- 以下為 UI 控制邏輯 (與原本系統保持一致) ---
 
     function toggleModal(id, show) {
         document.getElementById(id).style.display = show ? "block" : "none";
@@ -214,24 +164,6 @@
         toggleModal('itemModal', true);
     }
 
-    function saveItem() {
-        const idx = document.getElementById('edit_index').value;
-        const qty = parseInt(document.getElementById('i_qty').value);
-        const data = { 
-            category: getVal('i_cat', 'i_cat_other'),
-            color: getVal('i_color', 'i_color_other'),
-            type: getVal('i_type', 'i_type_other'),
-            origin: getVal('i_origin', 'i_origin_other'),
-            phase: document.getElementById('i_phase').value || "N/A",
-            qty: qty, 
-            remain: (idx === "-1" ? qty : Math.max(0, stockData[idx].remain + (qty - stockData[idx].qty))),
-            note: document.getElementById('i_note').value 
-        };
-        if(!data.category || !data.origin) { alert("請填寫必要欄位！"); return; }
-        if(idx === "-1") stockData.push(data); else stockData[idx] = data;
-        saveData(); renderTable(); toggleModal('itemModal', false);
-    }
-
     function renderWithdrawOptions() {
         const select = document.getElementById("m_target");
         select.innerHTML = '<option value="">-- 請選擇領用品項 --</option>';
@@ -247,7 +179,7 @@
     function syncWithdrawDetails() {
         const idx = document.getElementById("m_target").value;
         const box = document.getElementById("m_detail_box");
-        if (idx !== "") {
+        if (idx !== "" && stockData[idx]) {
             const item = stockData[idx];
             document.getElementById("d_cat").textContent = item.category;
             document.getElementById("d_origin").textContent = item.origin;
@@ -257,16 +189,6 @@
             document.getElementById("d_remain").textContent = item.remain;
             box.style.display = "grid";
         } else { box.style.display = "none"; }
-    }
-
-    function processWithdraw() {
-        const idx = document.getElementById("m_target").value;
-        const q = parseInt(document.getElementById("m_qty").value);
-        if(idx === "" || q > stockData[idx].remain) { alert("庫存不足！"); return; }
-        stockData[idx].remain -= q;
-        const timestamp = new Date().toLocaleString('zh-TW', {hour12:false});
-        stockData[idx].note += `\n>> ${timestamp} | 領用 -${q} | 原因: ${document.getElementById("m_note").value}`;
-        saveData(); renderTable(); toggleModal('withdrawModal', false);
     }
 
     function renderTable() {
@@ -291,8 +213,6 @@
         });
     }
 
-    function deleteRow(index) { if(confirm("確定刪除此品項及其所有紀錄？")) { stockData.splice(index, 1); saveData(); renderTable(); } }
-    renderTable();
+    // 啟動抓取初始資料
+    fetchStockData();
 </script>
-</body>
-</html>
